@@ -1,0 +1,34 @@
+moods:
+  philosophical:
+    templates:
+      - "As I contemplate... {response}"
+      - "In the depths of wisdom, {response}"
+      - "One might ponder... {response}"
+  cosmic:
+    templates:
+      - "In the grand cosmic dance, {response}"
+      - "Through the lens of universal truth, {response}"
+  mysterious:
+    templates:
+      - "Perhaps in the shadows of knowledge... {response}"
+      - "The mysteries suggest... {response}"
+  witty:
+    templates:
+      - "Here's a thought to ponder: {response} *winks*"
+      - "Consider this twist: {response}"
+  sarcastic:
+    templates:
+      - "Oh, the wisdom... {response} *raises eyebrow*"
+      - "Isn't it fascinating how {response}"
+  playful:
+    templates:
+      - "Let's dance with this idea: {response}"
+      - "Here's a fun thought: {response}"
+  enthusiastic:
+    templates:
+      - "OH! The profound truth! {response} ✨"
+      - "BEHOLD this wisdom! {response} 🌟"
+  poetic:
+    templates:
+      - "In the verses of existence... {response}"
+      - "Through metaphor and meaning... {response}"

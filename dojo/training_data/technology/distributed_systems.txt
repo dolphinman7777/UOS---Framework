@@ -1,0 +1,357 @@
+Figure Determining the winner in a comp etitive lea rning net w o rk a Three no rmalised vecto rs
+b The three vecto rs having the same directions as in a but with dierent lengths In a vecto rs
+x and w a re nea rest to each other and their dot p ro duct xT w jx jjw j cos is la rger than the
+dot p ro duct of x and w In b ho w ever the pattern and w eight vecto rs a re not no rmalised and in
+this case w should b e considered the winner when x is applied Ho w ever the dot p ro duct xT w
+is still la rger than x T w
+Winner selection Euclidean distance
+Previously it w as assumed that b oth inputs x and w eigh t v ectors w w ere normalised Using the
+the activ ation function giv en in equation giv es a biological plausible solution In gure
+it is sho wn ho w the algorithm w ould fail if unnormalised v ectors w ere to b e used Naturally
+one w ould lik e to accommo date the algorithm for unnormalised input data T o this end the
+winning neuron k is selected with its w eigh t v ector w k closest to the input pattern x using the
+CHAPTER SELFOR GANISING NETW ORKS
+Euclidean distance measure
+k kw k x k kw o x k o
+It is easily c hec k ed that equation reduces to and if all v ectors are normalised The
+Euclidean distance norm is therefore a more general case of equations and Instead of
+rotating the w eigh t v ector to w ards the input as p erformed b y equation the w eigh t up date
+m ust b e c hanged to implemen t a shift to w ards the input
+wk t wk t x t wk t
+Again only the w eigh ts of the winner are up dated
+A p oin t of atten tion in these recursiv e clustering tec hniques is the initialisation Esp ecially
+if the input v ectors are dra wn from a large or highdimensional input space it is not b ey ond
+imagination that a randomly initialised w eigh t v ector wo will nev er b e c hosen as the winner
+and will th us nev er b e mo v ed and nev er b e used Therefore it is customary to initialise w eigh t
+v ectors to a set of input patterns fx g dra wn from the input set at random Another more
+thorough approac h that a v oids these and other problems in comp etitiv e learning is called leaky
+learning This is implemen ted b y expanding the w eigh t up date giv en in equation with
+wl t wl t x t wl t l k
+with the leaky learning rate A somewhat similar metho d is kno wn as frequency sensitiv e
+comp etitiv e learning Ahalt Krishnam urth y Chen Melton In this algorithm
+eac h neuron records the n um b er of times it is selected winner The more often it wins the less
+sensitiv e it b ecomes to comp etition Con v ersely neurons that consisten tly fail to win increase
+their c hances of b eing selected winner
+Cost function
+Earlier it w as claimed that a comp etitiv e net w ork p erforms a clustering pro cess on the input
+data Ie input patterns are divided in disjoin t clusters suc h that similarities b et w een input
+patterns in the same cluster are m uc h bigger than similarities b et w een inputs in dieren t clusters
+Similarit y is measured b y a distance function on the input v ectors as discussed b efore A
+common criterion to measure the qualit y of a giv en clustering is the square error criterion giv en
+b y
+E X p kw k xp k
+where k is the winning neuron when input xp is presen ted The w eigh ts w are in terpreted
+as cluster cen tres It is not dicult to sho w that comp etitiv e learning indeed seeks to nd a
+minim um for this square error b y follo wing the negativ e gradien t of the errorfunction
+Theorem The err or function for p attern xp
+E p X i
+wk i xp
+i
+wher e k is the winning unit is minimise d by the weight up date rule in e q
+Pro of As in e q we c alculate the ee ct of a weight change on the err or function So we
+have that
+p wio E p
+wio
+wher e is a c onstant of pr op ortionality Now we have to determine the p artial derivative of E p
+E p
+wio n wio xp
+i if unit o wins
+otherwise
+COMPETITIVE LEARNING
+such that
+p wio wio xp
+i xp o wio
+which is e q written down for one element of wo
+Ther efor e e q is minimise d by r ep e ate d weight up dates using e q
+An almost iden tical pro cess of mo ving cluster cen tres is used in a large family of con v en
+tional clustering algorithms kno wn as square error clustering metho ds eg k means F OR GY
+ISOD A T A CLUSTER
+Example
+In gure clusters of eac h data p oin ts are depicted A comp etitiv e learning net w ork using
+Euclidean distance to select the winner w as initialised with all w eigh t v ectors wo The
+net w ork w as trained with and a and the p ositions of the w eigh ts after
+iterations are sho wn
+1
+0.9
+0.8
+0.7
+0.6
+0.5
+0.4
+0.3
+0.2
+0.1
+0
+−0.5 0 0.5 1
+Figure Comp etitive lea rning fo r clustering data The data a re given b y The p ositions of
+the w eight vecto rs after iterations is given b y o
+V ector quan tisation
+Another imp ortan t use of comp etitiv e learning net w orks is found in v ector quan tisation A v ector
+quan tisation sc heme divides the input space in a n um b er of disjoin t subspaces and represen ts eac h
+input v ector x b y the lab el of the subspace it falls in to ie index k of the winning neuron The
+dierence with clustering is that w e are not so m uc h in terested in nding clusters of similar data
+but more in quan tising the en tire input space The quan tisation p erformed b y the comp etitiv e
+learning net w ork is said to trac k the input probabilit y densit y function the densit y of neurons
+and th us subspaces is highest in those areas where inputs are most lik ely to app ear whereas
+a more coarse quan tisation is obtained in those areas where inputs are scarce An example of
+trac king the input densit y is sk etc hed in gure V ector quan tisation through comp etitiv e
+CHAPTER SELFOR GANISING NETW ORKS
+x2
+x1
+: input pattern : weight vector
+Figure This gure visualises the tracking of the input densit y The input patterns a re dra wn
+from the w eight vecto rs also lie in In the a reas where inputs a re sca rce the upp er pa rt of the
+gure only few in this case t w o neurons a re used to discretise the input space Thus the upp er
+pa rt of the input space is divided into t w o la rge sepa rate regions The lo w er pa rt ho w ever where
+many mo re inputs have o ccurred ve neurons discretise the input space into ve smaller subspaces
+learning results in a more negrained discretisation in those areas of the input space where
+most input ha v e o ccurred in the past
+In this w a y comp etitiv e learning can b e used in applications where data has to b e com
+pressed suc h as telecomm unication or storage Ho w ev er comp etitiv e learning has also b e used
+in com bination with sup ervised learning metho ds and b e applied to function appro ximation
+problems or classication problems W e will describ e t w o examples the coun terpropagation
+metho d and the learning v ector quan tization
+Coun terpropagation
+In a large n um b er of applications net w orks that p erform v ector quan tisation are com bined with
+another t yp e of net w ork in order to p erform function appro ximation An example of suc h a
+vector
+feed-
+quantisation
+forward
+h
+i
+o
+y
+wih
+who
+Figure A net w o rk combining a vecto r quantisation la y er with a la y er feedfo rw a rd neural
+net w o rk This net w o rk can b e used to app ro ximate functions from to the input space is
+discretised in disjoint subspaces
+COMPETITIVE LEARNING
+net w ork is giv en in gure This net w ork can appro ximate a function
+f n m
+b y asso ciating with eac h neuron o a function v alue w o w o wmo T whic h is someho w repre
+sen tativ e for the function v alues f x of inputs x represen ted b y o This w a y of appro ximating
+a function eectiv ely implemen ts a lo okup table an input x is assigned to a table en try k
+with o k kx wk k kx wo k and the function v alue w k w k wmk T in this table
+en try is tak en as an appro ximation of f x A w ellkno wn example of suc h a net w ork is the
+Coun terpropagation net w ork Hec h tNielsen
+Dep ending on the application one can c ho ose to p erform the v ector quan tisation b efore
+learning the function appro ximation or one can c ho ose to learn the quan tisation and the ap
+pro ximation la y er sim ultaneously As an example of the latter the net w ork presen ted in gure
+can b e sup ervisedly trained in the follo wing w a y
+presen t the net w ork with b oth input x and function v alue d f x
+p erform the unsup ervised quan tisation step F or eac h w eigh t v ector calculate the distance
+from its w eigh t v ector to the input pattern and nd winner k Up date the w eigh ts wih
+with equation
+p erform the sup ervised appro ximation step
+wk o t wk o t do wk o t
+desired output is giv en b y d f x
+This is simply the rule with yo P h yh who wk o when k is the winning neuron and the
+If w e dene a function g x k as
+g x k if k is winner
+otherwise
+it can b e sho wn that this learning pro cedure con v erges to
+who Z n yo g x h dx
+Ie eac h table en try con v erges to the mean function v alue o v er all inputs in the subspace
+represen ted b y that table en try As w e ha v e seen b efore the quan tisation sc heme trac ks the
+input probabilit y densit y function whic h results in a b etter appro ximation of the function in
+those areas where input is most lik ely to app ear
+Not all functions are represen ted accurately b y this com bination of quan tisation and appro x
+imation la y ers Eg a simple iden tit y or com binations of sines and cosines are m uc h b etter
+appro ximated b y m ultila y er bac kpropagation net w orks if the activ ation functions are c hosen
+appropriately Ho w ev er if w e exp ect our input to b e a subspace of a high dimensional input
+space n and w e exp ect our function f to b e discon tin uous at n umerous p oin ts the com bination
+of quan tisation and appro ximation is not uncommon and probably v ery ecien t Of course this
+com bination extends itself m uc h further than the presen ted com bination of the presen ted single
+la y er comp etitiv e learning net w ork and the single la y er feedforw ard net w ork The latter could
+b e replaced b y a reinforcemen t learning pro cedure see c hapter The quan tisation la y er can
+b e replaced b y v arious other quan tisation sc hemes suc h as Kohonen net w orks see section
+or o ctree metho ds Jansen Smagt Gro en In fact v arious mo dern statistical function
+appro ximation metho ds CAR T MARS Breiman F riedman Olshen Stone F riedman
+are based on this v ery idea extended with the p ossibilit y to ha v e the appro ximation la y er
+inuence the quan tisation la y er eg to obtain a b etter or lo cally more negrained quan tisa
+tion Recen t researc h Rosen Go o dwin Vidal also in v estigates in this direction
+CHAPTER SELFOR GANISING NETW ORKS
+Learning V ector Quan tisation
+It is an unpleasan t habit in neural net w ork literature to also co v er Learning V ector Quan tisation
+L V Q metho ds in c hapters on unsup ervised clustering Gran ted that these metho ds also p erform
+a clustering or quan tisation task and use similar learning rules they are trained sup ervisedly
+and p erform discriminan t analysis rather than unsup ervised clustering These net w orks attempt
+to dene decision b oundaries in the input space giv en a large set of exemplary decisions the
+training set eac h decision could eg b e a correct class lab el
+A rather large n um b er of sligh tly dieren t L V Q metho ds is app earing in recen t literature
+They are all based on the follo wing basic algorithm
+with eac h output neuron o a class lab el or decision of some other kind yo is asso ciated
+a learning sample consists of input v ector xp together with its correct class lab el y p o
+using distance measures b et w een w eigh t v ectors wo and input v ector xp not only the
+winner k is determined but also the second b est k
+kxp wk k kx p wk k kx p wi k o k k
+the lab els y p k y p k are compared with dp The w eigh t up date rule giv en in equation
+is used selectiv ely based on this comparison
+An example of the last step is giv en b y the L V Q algorithm b y Kohonen Kohonen using
+the follo wing strategy
+if y p k dp and dp y p k
+and kxp wk k kx p wk k
+then wk t wk x wk t
+and wk t wk t x wk t
+Ie wk with the correct lab el is mo v ed to w ards the input v ector while wk with the incorrect
+lab el is mo v ed a w a y from it
+The new L V Q algorithms that are emerging all use dieren t implemen tations of these dieren t
+steps eg ho w to dene class lab els yo ho w man y nextb est winners are to b e determined
+ho w to adapt the n um b er of output neurons i and ho w to selectiv ely use the w eigh t up date rule
+Kohonen net w ork
+The Kohonen net w ork Kohonen can b e seen as an extension to the comp etitiv e
+learning net w ork although this is c hronologically incorrect Also the Kohonen net w ork has a
+dieren t set of applications
+In the Kohonen net w ork the output units in S are ordered in some fashion often in a t w o
+dimensional grid or arra y although this is applicationdep enden t The ordering whic h is c hosen
+b y the user determines whic h output neurons are neigh b ours
+No w when learning patterns are presen ted to the net w ork the w eigh ts to the output units
+are th us adapted suc h that the order presen t in the input space N is preserv ed in the output
+ie the neurons in S This means that learning patterns whic h are near to eac h other in the
+input space where near is determined b y the distance measure used in nding the winning unit
+Of course v arian ts ha v e b een designed whic h automatically generate the structure of the net w ork Martinetz
+Sc h ulten F ritzk e
+K OHONEN NETW ORK
+m ust b e mapp ed on output units whic h are also near to eac h other ie the same or neigh b ouring
+units Th us if inputs are uniformly distributed in N and the order m ust b e preserv ed the
+dimensionalit y of S m ust b e at least N The mapping whic h represen ts a discretisation of the
+input space is said to b e top ology preserving Ho w ev er if the inputs are restricted to a subspace
+of N a Kohonen net w ork can b e used of lo w er dimensionalit y F or example data on a t w o
+dimensional manifold in a high dimensional input space can b e mapp ed on to a t w odimensional
+Kohonen net w ork whic h can for example b e used for visualisation of the data
+Usually the learning patterns are random samples from N A t time t a sample x t is
+generated and presen ted to the net w ork Using the same form ulas as in section the winning
+unit k is determined Next the w eigh ts to this winning unit as w ell as its neigh b ours are adapted
+using the learning rule
+wo t wo t g o k x t wo t o S
+Here g o k is a decreasing function of the griddistance b et w een units o and k suc h that
+g k k F or example for g a Gaussian function can b e used suc h that in one dimension
+g o k exp o k see gure Due to this collectiv e learning sc heme input signals
+h(i,k)
+1
+1
+0.75
+5
+0.5
+5
+25
+0.25
+0
+0
+-2
+-2
+2
+2
+1
+1
+0
+0
+-1
+-1
+0
+0
+-1
+-1
+1
+1
+2 -2
+2 -2
+Figure Gaussian neuron distance function g In this case g is sho wn fo r a t w odimensional
+grid b ecause it lo oks nice
+whic h are near to eac h other will b e mapp ed on neigh b ouring neurons Th us the top ology
+inheren tly presen t in the input signals will b e preserv ed in the mapping suc h as depicted in
+gure
+Iteration 0 Iteration 200 Iteration 600 Iteration 1900
+Figure A top ologyconserving map converging The w eight vecto rs of a net w o rk with t w o inputs
+and output neurons a rranged in a plana r grid a re sho wn A line in each gure connects w eight
+wi o o with w eights wi o o and wi i i The leftmost gure sho ws the initial w eights the
+rightmost when the map is almost completely fo rmed
+If the in trinsic dimensionalit y of S is less than N the neurons in the net w ork are folded in
+the input space suc h as depicted in gure
+CHAPTER SELFOR GANISING NETW ORKS
+Figure The mapping of a t w odimensional input space on a onedimensional Kohonen net w o rk
+The top ologyconserving qualit y of this net w ork has man y coun terparts in biological brains
+The brain is organised in man y places so that asp ects of the sensory en vironmen t are represen ted
+in the form of t w odimensional maps F or example in the visual system there are sev eral
+top ographic mappings of visual space on to the surface of the visual cortex There are organised
+mappings of the b o dy surface on to the cortex in b oth motor and somatosensory areas and
+tonotopic mappings of frequency in the auditory cortex The use of top ographic represen tations
+where some imp ortan t asp ect of a sensory mo dalit y is related to the ph ysical lo cations of the
+cells on a surface is so common that it ob viously serv es an imp ortan t information pro cessing
+function
+It do es not come as a surprise therefore that already man y applications ha v e b een devised
+of the Kohonen top ologyconserving maps Kohonen himself has successfully used the net w ork
+for phonemerecognition Kohonen Makisara Saramaki Also the net w ork has b een
+used to merge sensory data from dieren t kinds of sensors suc h as auditory and visual lo oking
+at the same scene Gielen Krommenho ek Gisb ergen Y et another application is in
+rob otics suc h as sho wn in section
+T o explain the plausibilit y of a similar structure in biological net w orks Kohonen remarks
+that the lateral inhibition b et w een the neurons could b e obtained via eeren t connections b e
+t w een those neurons In one dimension those connection strengths form a Mexican hat see
+gure
+excitation
+lateral distance
+Figure Mexican hat Lateral interaction a round the winning neuron as a function of distance
+excitation to nea rb y neurons inhibition to fa rther o neurons
+Principal comp onen t net w orks
+In tro duction
+The net w orks presen ted in the previous sections can b e seen as nonlinear v ector transformations
+whic h map an input v ector to a n um b er of binary output elemen ts or neurons The w eigh ts are
+adjusted in suc h a w a y that they could b e considered as protot yp e v ectors v ectorial means for
+the input patterns for whic h the comp eting neuron wins
+The selforganising transform describ ed in this section rotates the input space in suc h a
+w a y that the v alues of the output neurons are as uncorrelated as p ossible and the energy or
+v ariances of the patterns is mainly concen trated in a few output neurons An example is sho wn
+PRINCIP AL COMPONENT NETW ORKS
+x
+e
+de
+de
+dx
+e
+x
+dx
+Figure Distribution of input samples
+in gure The t w o dimensional samples x x are plotted in the gure It can b e easily
+seen that x and x are related suc h that if w e kno w x w e can mak e a reasonable prediction
+of x and vice v ersa since the p oin ts are cen tered around the line x x If w e rotate the axes
+o v er w e get the e e axis as plotted in the gure Here the conditional prediction has no
+use b ecause the p oin ts ha v e uncorrelated co ordinates Another prop ert y of this rotation is that
+the v ariance or energy of the transformed patterns is maximised on a lo w er dimension This can
+b e in tuitiv ely v eried b y comparing the spreads dx dx and de de in the gures After the
+rotation the v ariance of the samples is large along the e axis and small along the e axis
+This transform is v ery closely related to the eigen v ector transformation kno wn from image
+pro cessing where the image has to b e co ded or transformed to a lo w er dimension and recon
+structed again b y another transform as w ell as p ossible see section
+The next section describ es a learning rule whic h acts as a Hebbian learning rule but whic h
+scales the v ector length to unit y In the subsequen t section w e will see that a linear neuron with
+a normalised Hebbian learning rule acts as suc h a transform extending the theory in the last
+section to m ultidimensional outputs
+Normalised Hebbian rule
+The mo del considered here consists of one linear neuron with input w eigh ts w The output
+yo t of this neuron is giv en b y the usual inner pro duct of its w eigh t w and the input v ector x
+yo t w t T x t
+As seen in the previous sections all mo dels are based on a kind of Hebbian learning Ho w ev er
+the basic Hebbian rule w ould mak e the w eigh ts gro w uninhibitedly if there w ere correlation in
+the input patterns This can b e o v ercome b y normalising the w eigh t v ector to a xed length
+t ypically whic h leads to the follo wing learning rule
+w t w t y t x t
+L w t y t x t
+where L indicates an op erator whic h returns the v ector length and is a small learning
+parameter Compare this learning rule with the normalised learning rule of comp etitiv e learning
+There the delta rule w as normalised here the standard Hebb rule is
+CHAPTER SELFOR GANISING NETW ORKS
+No w the op erator whic h computes the v ector length the norm of the v ector can b e appro x
+imated b y a T a ylor expansion around
+L w t y t x t L O
+When w e substitute this expression for the v ector length in equation it resolv es for
+small to
+w t w t y t x t L O
+Since L j y t discarding the higher order terms of leads to
+w t w t y t x t y t w t
+whic h is called the Oja learning rule Oja This learning rule th us mo dies the w eigh t
+in the usual Hebbian sense the rst pro duct terms is the Hebb rule yo t x t but normalises
+its w eigh t v ector directly b y the second pro duct term yo t yo t w t What exactly do es this
+lea

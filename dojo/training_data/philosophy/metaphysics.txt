@@ -1,0 +1,639 @@
+To our knowledge there is no bound on how large a number might be constructed in the pro-
+cess of reaching a given target—for example, the number 620,448,401,733,239,439,360,000
+is generated in the expression for 5—so the state space for this problem is infinite. Such
+state spaces arise frequently in tasks involving the generation of mathematical expressions,
+circuits, proofs, programs, and other recursively defined objects.
+3.2.2 Real-world problems
+We have already seen how the route-finding problem is defined in terms of specified loca-
+tions and transitions along links between them. Route-finding algorithms are used in a variety
+of applications. Some, such as Web sites and in-car systems that provide driving directions,
+are relatively straightforward extensions of the Romania example. Others, such as routing
+video streams in computer networks, military operations planning, and airline travel-planning
+systems, involve much more complex specifications. Consider the airline travel problems that
+must be solved by a travel-planning Web site:
+• States: Each state obviously includes a location (e.g., an airport) and the current time.
+Furthermore, because the cost of an action (a flight segment) may depend on previous
+segments, their fare bases, and their status as domestic or international, the state must
+record extra information about these “historical” aspects.
+• Initial state: This is specified by the user’s query.
+• Actions: Take any flight from the current location, in any seat class, leaving after the
+current time, leaving enough time for within-airport transfer if needed.
+• Transition model: The state resulting from taking a flight will have the flight’s desti-
+nation as the current location and the flight’s arrival time as the current time.
+• Goal test: Are we at the final destination specified by the user?
+• Path cost: This depends on monetary cost, waiting time, flight time, customs and im-
+migration procedures, seat quality, time of day, type of airplane, frequent-flyer mileage
+awards, and so on.
+74 Chapter 3. Solving Problems by Searching
+TOURING PROBLEM
+TRAVELING
+SALESPERSON
+PROBLEM
+VLSI LAYOUT
+ROBOT NAVIGATION
+AUTOMATIC
+ASSEMBLY
+SEQUENCING Commercial travel advice systems use a problem formulation of this kind, with many addi-
+tional complications to handle the byzantine fare structures that airlines impose. Any sea-
+soned traveler knows, however, that not all air travel goes according to plan. A really good
+system should include contingency plans—such as backup reservations on alternate flights—
+to the extent that these are justified by the cost and likelihood of failure of the original plan.
+Touring problems are closely related to route-finding problems, but with an impor-
+tant difference. Consider, for example, the problem “Visit every city in Figure 3.2 at least
+once, starting and ending in Bucharest.” As with route finding, the actions correspond
+to trips between adjacent cities. The state space, however, is quite different. Each state
+must include not just the current location but also the set of cities the agent has visited.
+So the initial state would be In(Bucharest),Visited({Bucharest}), a typical intermedi-
+ate state would be In(Vaslui),Visited({Bucharest,Urziceni,Vaslui}), and the goal test
+would check whether the agent is in Bucharest and all 20 cities have been visited.
+The traveling salesperson problem (TSP) is a touring problem in which each city
+must be visited exactly once. The aim is to find the shortest tour. The problem is known to
+be NP-hard, but an enormous amount of effort has been expended to improve the capabilities
+of TSP algorithms. In addition to planning trips for traveling salespersons, these algorithms
+have been used for tasks such as planning movements of automatic circuit-board drills and of
+stocking machines on shop floors.
+A VLSI layout problem requires positioning millions of components and connections
+on a chip to minimize area, minimize circuit delays, minimize stray capacitances, and max-
+imize manufacturing yield. The layout problem comes after the logical design phase and is
+usually split into two parts: cell layout and channel routing. In cell layout, the primitive
+components of the circuit are grouped into cells, each of which performs some recognized
+function. Each cell has a fixed footprint (size and shape) and requires a certain number of
+connections to each of the other cells. The aim is to place the cells on the chip so that they do
+not overlap and so that there is room for the connecting wires to be placed between the cells.
+Channel routing finds a specific route for each wire through the gaps between the cells. These
+search problems are extremely complex, but definitely worth solving. Later in this chapter,
+we present some algorithms capable of solving them.
+Robot navigation is a generalization of the route-finding problem described earlier.
+Rather than following a discrete set of routes, a robot can move in a continuous space with
+(in principle) an infinite set of possible actions and states. For a circular robot moving on a
+flat surface, the space is essentially two-dimensional. When the robot has arms and legs or
+wheels that must also be controlled, the search space becomes many-dimensional. Advanced
+techniques are required just to make the search space finite. We examine some of these
+methods in Chapter 25. In addition to the complexity of the problem, real robots must also
+deal with errors in their sensor readings and motor controls.
+Automatic assembly sequencing of complex objects by a robot was first demonstrated
+by FREDDY (Michie, 1972). Progress since then has been slow but sure, to the point where
+the assembly of intricate objects such as electric motors is economically feasible. In assembly
+problems, the aim is to find an order in which to assemble the parts of some object. If the
+wrong order is chosen, there will be no way to add some part later in the sequence without
+Section 3.3. Searching for Solutions 75
+PROTEIN DESIGN
+undoing some of the work already done. Checking a step in the sequence for feasibility is a
+difficult geometrical search problem closely related to robot navigation. Thus, the generation
+of legal actions is the expensive part of assembly sequencing. Any practical algorithm must
+avoid exploring all but a tiny fraction of the state space. Another important assembly problem
+is protein design, in which the goal is to find a sequence of amino acids that will fold into a
+three-dimensional protein with the right properties to cure some disease.
+3.3 SEARCHING FOR SOLUTIONS
+SEARCH TREE
+NODE
+EXPANDING
+GENERATING
+PARENT NODE
+CHILD NODE
+LEAF NODE
+FRONTIER
+OPEN LIST SEARCH STRATEGY
+REPEATED STATE
+LOOPY PATH Having formulated some problems, we now need to solve them. A solution is an action
+sequence, so search algorithms work by considering various possible action sequences. The
+possible action sequences starting at the initial state form a search tree with the initial state
+at the root; the branches are actions and the nodes correspond to states in the state space of
+the problem. Figure 3.6 shows the first few steps in growing the search tree for finding a route
+from Arad to Bucharest. The root node of the tree corresponds to the initial state, In(Arad).
+The first step is to test whether this is a goal state. (Clearly it is not, but it is important to
+check so that we can solve trick problems like “starting in Arad, get to Arad.”) Then we
+need to consider taking various actions. We do this by expanding the current state; that is,
+applying each legal action to the current state, thereby generating a new set of states. In
+this case, we add three branches from the parent node In(Arad) leading to three new child
+nodes: In(Sibiu), In(Timisoara), and In(Zerind). Now we must choose which of these three
+possibilities to consider further.
+This is the essence of search—following up one option now and putting the others aside
+for later, in case the first choice does not lead to a solution. Suppose we choose Sibiu first.
+We check to see whether it is a goal state (it is not) and then expand it to get In(Arad),
+In(Fagaras), In(Oradea), and In(RimnicuVilcea). We can then choose any of these four or go
+back and choose Timisoara or Zerind. Each of these six nodes is a leaf node, that is, a node
+with no children in the tree. The set of all leaf nodes available for expansion at any given
+point is called the frontier. (Many authors call it the open list, which is both geographically
+less evocative and less accurate, because other data structures are better suited than a list.) In
+Figure 3.6, the frontier of each tree consists of those nodes with bold outlines.
+The process of expanding nodes on the frontier continues until either a solution is found
+or there are no more states to expand. The general TREE-SEARCH algorithm is shown infor-
+mally in Figure 3.7. Search algorithms all share this basic structure; they vary primarily
+according to how they choose which state to expand next—the so-called search strategy.
+The eagle-eyed reader will notice one peculiar thing about the search tree shown in Fig-
+ure 3.6: it includes the path from Arad to Sibiu and back to Arad again! We say that In(Arad)
+is a repeated state in the search tree, generated in this case by a loopy path. Considering
+such loopy paths means that the complete search tree for Romania is infinite because there
+is no limit to how often one can traverse a loop. On the other hand, the state space—the
+map shown in Figure 3.2—has only 20 states. As we discuss in Section 3.4, loops can cause
+76 Chapter 3. Solving Problems by Searching
+REDUNDANT PATH
+certain algorithms to fail, making otherwise solvable problems unsolvable. Fortunately, there
+is no need to consider loopy paths. We can rely on more than intuition for this: because path
+costs are additive and step costs are nonnegative, a loopy path to any given state is never
+better than the same path with the loop removed.
+Loopy paths are a special case of the more general concept of redundant paths, which
+exist whenever there is more than one way to get from one state to another. Consider the paths
+Arad–Sibiu (140 km long) and Arad–Zerind–Oradea–Sibiu (297 km long). Obviously, the
+second path is redundant—it’s just a worse way to get to the same state. If you are concerned
+about reaching the goal, there’s never any reason to keep more than one path to any given
+state, because any goal state that is reachable by extending one path is also reachable by
+extending the other.
+In some cases, it is possible to define the problem itself so as to eliminate redundant
+paths. For example, if we formulate the 8-queens problem (page 71) so that a queen can be
+placed in any column, then each state with n queens can be reached by n! different paths; but
+if we reformulate the problem so that each new queen is placed in the leftmost empty column,
+then each state can be reached only through one path.
+(a) The initial state
+Arad
+Sibiu
+Timisoara
+Zerind
+Arad Fagaras Oradea
+Rimnicu Vilcea Lugoj
+Arad
+Arad Oradea
+(b) After expanding Arad
+Arad
+Sibiu Timisoara
+Zerind
+Arad Fagaras Oradea Arad
+Rimnicu Vilcea Lugoj
+Arad Oradea
+(c) After expanding Sibiu
+Arad
+Sibiu
+Timisoara
+Zerind
+Arad Fagaras Oradea
+Rimnicu Vilcea
+Arad Oradea
+Lugoj Arad
+Figure 3.6 Partial search trees for finding a route from Arad to Bucharest. Nodes that
+have been expanded are shaded; nodes that have been generated but not yet expanded are
+outlined in bold; nodes that have not yet been generated are shown in faint dashed lines.
+Section 3.3. Searching for Solutions 77
+function TREE-SEARCH(problem) returns a solution, or failure
+initialize the frontier using the initial state of problem
+loop do
+if the frontier is empty then return failure
+choose a leaf node and remove it from the frontier
+if the node contains a goal state then return the corresponding solution
+expand the chosen node, adding the resulting nodes to the frontier
+function GRAPH-SEARCH(problem) returns a solution, or failure
+initialize the frontier using the initial state of problem
+initialize the explored set to be empty
+loop do
+if the frontier is empty then return failure
+choose a leaf node and remove it from the frontier
+if the node contains a goal state then return the corresponding solution
+add the node to the explored set
+expand the chosen node, adding the resulting nodes to the frontier
+only if not in the frontier or explored set
+Figure 3.7 An informal description of the general tree-search and graph-search algo-
+rithms. The parts of GRAPH-SEARCH marked in bold italic are the additions needed to
+handle repeated states.
+RECTANGULAR GRID
+EXPLORED SET
+CLOSED LIST
+SEPARATOR
+In other cases, redundant paths are unavoidable. This includes all problems where
+the actions are reversible, such as route-finding problems and sliding-block puzzles. Route-
+finding on a rectangular grid (like the one used later for Figure 3.9) is a particularly impor-
+tant example in computer games. In such a grid, each state has four successors, so a search
+tree of depth d that includes repeated states has 4d leaves; but there are only about 2d2 distinct
+states within d steps of any given state. For d = 20, this means about a trillion nodes but only
+about 800 distinct states. Thus, following redundant paths can cause a tractable problem to
+become intractable. This is true even for algorithms that know how to avoid infinite loops.
+As the saying goes, algorithms that forget their history are doomed to repeat it. The
+way to avoid exploring redundant paths is to remember where one has been. To do this, we
+augment the TREE-SEARCH algorithm with a data structure called the explored set (also
+known as the closed list), which remembers every expanded node. Newly generated nodes
+that match previously generated nodes—ones in the explored set or the frontier—can be dis-
+carded instead of being added to the frontier. The new algorithm, called GRAPH-SEARCH, is
+shown informally in Figure 3.7. The specific algorithms in this chapter draw on this general
+design.
+Clearly, the search tree constructed by the GRAPH-SEARCH algorithm contains at most
+one copy of each state, so we can think of it as growing a tree directly on the state-space graph,
+as shown in Figure 3.8. The algorithm has another nice property: the frontier separates the
+state-space graph into the explored region and the unexplored region, so that every path from
+78 Chapter 3. Solving Problems by Searching
+Figure 3.8 A sequence of search trees generated by a graph search on the Romania prob-
+lem of Figure 3.2. At each stage, we have extended each path by one step. Notice that at the
+third stage, the northernmost city (Oradea) has become a dead end: both of its successors are
+already explored via other paths.
+(a)
+(b)
+(c)
+Figure 3.9 The separation property of GRAPH-SEARCH, illustrated on a rectangular-grid
+problem. The frontier (white nodes) always separates the explored region of the state space
+(black nodes) from the unexplored region (gray nodes). In (a), just the root has been ex-
+panded. In (b), one leaf node has been expanded. In (c), the remaining successors of the root
+have been expanded in clockwise order.
+the initial state to an unexplored state has to pass through a state in the frontier. (If this
+seems completely obvious, try Exercise 3.13 now.) This property is illustrated in Figure 3.9.
+As every step moves a state from the frontier into the explored region while moving some
+states from the unexplored region into the frontier, we see that the algorithm is systematically
+examining the states in the state space, one by one, until it finds a solution.
+3.3.1 Infrastructure for search algorithms
+Search algorithms require a data structure to keep track of the search tree that is being con-
+structed. For each node n of the tree, we have a structure that contains four components:
+• n.STATE: the state in the state space to which the node corresponds;
+• n.PARENT: the node in the search tree that generated this node;
+• n.ACTION: the action that was applied to the parent to generate the node;
+• n.PATH-COST: the cost, traditionally denoted by g(n), of the path from the initial state
+to the node, as indicated by the parent pointers.
+Section 3.3. Searching for Solutions 79
+PARENT
+5
+5
+4
+4
+Node
+ACTION = Right
+PATH-COST = 6
+6
+6
+1
+1
+8
+8
+STATE
+7
+7
+3
+3
+2
+2
+Figure 3.10 Nodes are the data structures from which the search tree is constructed. Each
+has a parent, a state, and various bookkeeping fields. Arrows point from child to parent.
+Given the components for a parent node, it is easy to see how to compute the necessary
+components for a child node. The function CHILD-NODE takes a parent node and an action
+and returns the resulting child node:
+function CHILD-NODE(problem, parent, action) returns a node
+return a node with
+STATE = problem.RESULT(parent.STATE, action),
+PARENT = parent, ACTION = action,
+PATH-COST = parent.PATH-COST + problem.STEP-COST(parent.STATE, action)
+QUEUE
+The node data structure is depicted in Figure 3.10. Notice how the PARENT pointers
+string the nodes together into a tree structure. These pointers also allow the solution path to be
+extracted when a goal node is found; we use the SOLUTION function to return the sequence
+of actions obtained by following parent pointers back to the root.
+Up to now, we have not been very careful to distinguish between nodes and states, but in
+writing detailed algorithms it’s important to make that distinction. A node is a bookkeeping
+data structure used to represent the search tree. A state corresponds to a configuration of the
+world. Thus, nodes are on particular paths, as defined by PARENT pointers, whereas states
+are not. Furthermore, two different nodes can contain the same world state if that state is
+generated via two different search paths.
+Now that we have nodes, we need somewhere to put them. The frontier needs to be
+stored in such a way that the search algorithm can easily choose the next node to expand
+according to its preferred strategy. The appropriate data structure for this is a queue. The
+operations on a queue are as follows:
+• EMPTY?(queue) returns true only if there are no more elements in the queue.
+• POP(queue) removes the first element of the queue and returns it.
+• INSERT(element, queue) inserts an element and returns the resulting queue.
+80 Chapter 3. Solving Problems by Searching
+FIFO QUEUE
+LIFO QUEUE
+PRIORITY QUEUE
+CANONICAL FORM
+COMPLETENESS
+OPTIMALITY
+TIME COMPLEXITY
+SPACE COMPLEXITY
+BRANCHING FACTOR
+DEPTH SEARCH COST
+TOTAL COST
+Queues are characterized by the order in which they store the inserted nodes. Three common
+variants are the first-in, first-out or FIFO queue, which pops the oldest element of the queue;
+the last-in, first-out or LIFO queue (also known as a stack), which pops the newest element
+of the queue; and the priority queue, which pops the element of the queue with the highest
+priority according to some ordering function.
+The explored set can be implemented with a hash table to allow efficient checking for
+repeated states. With a good implementation, insertion and lookup can be done in roughly
+constant time no matter how many states are stored. One must take care to implement the
+hash table with the right notion of equality between states. For example, in the traveling
+salesperson problem (page 74), the hash table needs to know that the set of visited cities
+{Bucharest,Urziceni,Vaslui}is the same as {Urziceni,Vaslui,Bucharest}. Sometimes this can
+be achieved most easily by insisting that the data structures for states be in some canonical
+form; that is, logically equivalent states should map to the same data structure. In the case
+of states described by sets, for example, a bit-vector representation or a sorted list without
+repetition would be canonical, whereas an unsorted list would not.
+3.3.2 Measuring problem-solving performance
+Before we get into the design of specific search algorithms, we need to consider the criteria
+that m
+Most of the readers of this book are likely to be around to experience the Singularity. As we reviewed in the previous
+chapter, accelerating progress in biotechnology will enable us to reprogram our genes and metabolic processes to turn
+off disease and aging processes. This progress will include rapid advances in genomics (influencing genes),
+proteomics (understanding and influencing the role of proteins), gene therapy (suppressing gene expression with such
+technologies as RNA interference and inserting new genes into the nucleus), rational drug design (formulating drugs
+that target precise changes in disease and aging processes), and therapeutic cloning of rejuvenated (telomere-extended
+and DNA-corrected) versions of our own cells, tissues, and organs, and related developments.
+Biotechnology will extend biology and correct its obvious flaws. The overlapping revolution of nanotechnology
+will enable us to expand beyond the severe limitations of biology. As Terry Grossman and I articulated in Fantastic
+Voyage: Live Long Enough to Live Forever, we are rapidly gaining the knowledge and the tools to indefinitely
+maintain and extend the "house" each of us calls his body and brain. Unfortunately the vast majority of our baby-
+boomer peers are unaware of the fact that they do not have to suffer and die in the "normal" course of life, as prior
+generations have done—if they take aggressive action, action that goes beyond the usual notion of a basically healthy
+lifestyle (see "Resources and Contact Information," p. 489).
+Historically, the only means for humans to outlive a limited biological life span has been to pass on values,
+beliefs, and knowledge to future generations. We are now approaching a paradigm shift in the means we will have
+available to preserve the patterns underlying our existence. Human life expectancy is itself growing steadily and will
+accelerate rapidly, now that we are in the early stages of reverse engineering the information processes underlying life
+and disease. Robert Freitas estimates that eliminating a specific list comprising 50 percent of medically preventable
+conditions would extend human life expectancy to over 150 years.39 By preventing 90 percent of medical problems,
+life expectancy grows to over five hundred years. At 99 percent, we'd be over one thousand years. We can expect that
+the full realization of the biotechnology and nanotechnology revolutions will enable us to eliminate virtually all
+medical causes of death. As we move toward a nonbiological existence, we will gain the means of "backing ourselves
+up" (storing the key patterns underlying our knowledge, skills, and personality), thereby eliminating most causes of
+death as we know it.
+The Transformation to Nonbiological Experience
+A mind that stays at the same capacity cannot live forever; after a few thousand years it would look more like
+a repeating tape loop than a person. To live indefinitely long, the mind itself must grow, ... and when it
+becomes great enough, and looks back ... what fellow feeling can it have with the soul that it was originally?
+The later being would be everything the original was, but vastly more.
+—VERNOR VINGE
+The empires of the future are the empires of the mind.
+—WINSTON CHURCHILL
+I reported on brain uploading in chapter 4. The straightforward brain-porting scenario involves scanning a human brain
+(most likely from within), capturing all of the salient details, and reinstantiating the brain's state in a different—most
+likely much more powerful—computational substrate. This will be a feasible procedure and will happen most likely
+around the late 2030s. But this is not the primary way that I envision the transition to nonbiological experience taking
+place. It will happen, rather, in the same way that all other paradigm shifts happen: gradually (but at an accelerating
+pace).
+As I pointed out above, the shift to nonbiological thinking will be a slippery slope, but one on which we have
+already started. We will continue to have human bodies, but they will become morphable projections of our
+intelligence. In other words, once we have incorporated MNT fabrication into ourselves, we will be able to create and
+re-create different bodies at will.
+However achieved, will such fundamental shifts enable us to live forever? The answer depends on what we mean
+by "living" and "dying." Consider what we do today with our personal computer files. When we change from an older
+computer to a newer one, we don't throw all our files away. Rather, we copy them and reinstall them on the new
+hardware. Although our software does not necessarily continue its existence forever, its longevity is in essence
+independent of and disconnected from the hardware that it runs on.
+Currently, when our human hardware crashes, the software of our lives—our personal "mind file"—dies with it.
+However, this will not continue to be the case when we have the means to store and restore the thousands of trillions of
+bytes of information represented in the pattern that we call our brains (together with the rest of our nervous system,
+endocrine system, and other structures that our mind file comprises).
+At that point the longevity of one's mind file will not depend on the continued viability of any particular hardware
+medium (for example, the survival of a biological body and brain). Ultimately software-based humans will be vastly
+extended beyond the severe limitations of humans as we know them today. They will live out on the Web, projecting
+bodies whenever they need or want them, including virtual bodies in diverse realms of virtual reality, holographically
+projected bodies, foglet-projected bodies, and physical bodies comprising nanobot swarms and other forms of
+nanotechnology.
+By the middle of the twenty-first century humans will be able to expand their thinking without limit. This is a
+form of immortality, although it is important to point out that data and information do not necessarily last forever: the
+longevity of information depends on its relevance, utility, and accessibility. If you've ever tried to retrieve information
+from an obsolete form of data storage in an old, obscure format (for example, a reel of magnetic tape from a 1970
+minicomputer), you understand the challenges in keeping software viable. However, if we are diligent in maintaining
+our mind file, making frequent backups, and porting to current formats and mediums, a form of immortality can be
+attained, at least for software-based humans. Later in this century it will seem remarkable to people that humans in an
+earlier era lived their lives without a backup of their most precious information: that contained in their brains and
+bodies.
+Is this form of immortality the same concept as a physical human, as we know it today, living forever? In one
+sense it is, because today one's self is not a constant collection of matter, either. Recent research shows that even our
+neurons, thought to be relatively long lasting, change all of their constituent subsystems, such as the tubules, in a
+matter of weeks. Only our pattern of matter and energy persists, and even that gradually changes. Similarly, it will be
+the pattern of a software human that persists and develops and slowly alters.
+But is that person based on my mind file, who migrates across many computational substrates and who outlives
+any particular thinking medium, really me? This consideration takes us back to the same questions of consciousness
+and identity that have been debated since Plato's dialogues (which we examine in the next chapter). During the course
+of the twenty-first century these will not remain topics for polite philosophical debates but will have to be confronted
+as vital, practical, political, and legal issues.
+A related question: Is death desirable? The "inevitability" of death is deeply ingrained in human thinking. If death
+seems unavoidable, we have little choice but to rationalize it as necessary, even ennobling. The technology of the
+Singularity will provide practical and accessible means for humans to evolve into something greater, so we will no
+longer need to rationalize death as a primary means of giving meaning to life.
+The Longevity of Information
+"The horror of that moment," the King went on, "I shall never, never forget it!" "You will, though," the
+Queen said, "if you don't make a memorandum of it."
+—LEWIS CARROLL, THROUGH THE LOOKING-GLASS
+The only things you can be sure of, so the saying goes, are death and taxes—but don't be too sure about death.
+—JOSEPH STROUT, NEUROSCIENTIST
+I do not know sire, but whatever they will turn out to be I am sure you will tax them.
+—MICHAEL FARADAY, RESPONDING TO A QUESTION FROM THE BRITISH EXCHEQUER AS TO
+WHAT PRACTICAL USE COULD BE MADE OF HIS DEMONSTRATION OF ELECTROMAGNETISM
+Do not go gentle into that good night, ...
+Rage, rage against the dying of the light.
+—DYLAN THOMAS
+The opportunity to translate our lives, our history, our thoughts, and our skills into information raises the issue of how
+long information lasts. I've always revered knowledge and gathered information of all kinds as a child, an inclination I
+shared with my father.
+By way of background, my father was one of those people who liked to store all the images and sounds that
+documented his life. Upon his untimely death at the age of fifty-eight in 1970, I inherited his archives, which I treasure
+to this day. I have my father's 1938 doctoral dissertation from the University of Vienna, which contains his unique
+insights into the contributions of Brahms to our musical vocabulary. There are albums of neatly arranged newspaper
+clippings of his acclaimed musical concerts as a teenager in the hills of Austria. There are urgent letters to and from
+the American music patron who sponsored his flight from Hitler, just before Kristallnacht and related historical
+developments in Europe in the late 1930s made such escape impossible. These items are among dozens of aging boxes
+containing a myriad of remembrances, including photographs, musical recordings on vinyl and magnetic tape, personal
+letters, and even old bills.
+I also inherited his penchant for preserving the records of one's life, so along with my father's boxes I have several
+hundred boxes of my own papers and files. My father's productivity, assisted only by the technology of his manual
+typewriter and carbon paper, cannot compare with my own prolificacy, aided and abetted by computers and high-
+speed printers that can reproduce my thoughts in all kinds of permutations.
+Tucked away in my own boxes are also various forms of digital media: punch cards, paper-tape reels, and digital
+magnetic tapes and disks of various sizes and formats. I often wonder just how accessible this information remains.
+Ironically the ease of approaching this information is inversely proportional to the level of advancement of the
+technology used to create it. Most straightforward are the paper documents, which although showing signs of age are
+eminently readable. Only slightly more challenging are the vinyl records and analog tape recordings. Although some
+basic equipment is required, it is not difficult to find or use. The punch cards are somewhat more challenging, but it's
+still possible to find punch-card readers, and the formats are uncomplicated.
+By far the most demanding information to retrieve is that contained on the digital disks and tapes. Consider the
+challenges involved. For each medium I have to figure out exactly which disk or tape drive was used, whether an IBM
+1620 circa 1960 or a Data General Nova I circa 1973.Then, once I've assembled the requisite equipment, there are
+layers of software to deal with: the appropriate operating system, disk information drivers, and application programs.
+And, when I run into the inevitable scores of problems inherent in each layer of hardware and software, just whom am
+I going to call for assistance? It's hard enough getting contemporary systems to work, let alone systems for which the
+help desks were disbanded decades ago (if they ever existed). Even at the Computer History Museum most of the
+devices on display stopped functioning many years ago.41
+Assuming I do prevail against all of these obstacles, I have to account for the fact that the actual magnetic data on
+the disks has probably decayed and that the old computers would still generate mostly error messages.42 But is the
+information gone? The answer is, Not entirely. Even though the magnetic spots may no longer be readable by the
+original equipment, the faded regions could be enhanced by suitably sensitive equipment, via methods that are
+analogous to the image enhancement often applied to the pages of old books when they are scanned. The information
+is still there, although very difficult to get at. With enough devotion and historical research, one might actually retrieve
+it. If we had reason to believe that one of these disks contained secrets of enormous value, we would probably succeed
+in recovering the information.
+But mere nostalgia is unlikely to be sufficient to motivate anyone to undertake this formidable task. I will say that
+because I did largely anticipate this dilemma, I did make paper printouts of most of these old files. But keeping all our
+information on paper is not the answer, as hard-copy archives present their own set of problems. Although I can
+readily read even a century-old paper manuscript if I'm holding it in my hand, finding a desired document from among
+thousands of only modestly organized file folders can be a frustrating and time-consuming task. It can take an entire
+afternoon to locate the right folder, not to mention the risk of straining one's back from moving dozens of heavy file
+boxes. Using microfilm or microfiche may alleviate some of the difficulty, but the matter of locating the right
+document remains.
+I have dreamed of taking these hundreds of thousands of records and scanning them into a massive personal
+database, which would allow me to utilize powerful contemporary search-and-retrieve methods on them. I even have a
+name for this venture—DAISI (Document and Image Storage Invention)—and have been accumulating ideas for it for
+many years. Computer pioneer Gordon Bell (former chief engineer of Digital Equipment Corporation), DARPA
+(Defense Advanced Research Projects Agency), and the Long Now Foundation are also working on systems to address
+this challenge.43
+DAISI will involve the rather daunting task of scanning and patiently cataloging all these documents. But the real
+challenge to my dream of DAISI is surprisingly deep: how can I possibly select appropriate hardware and software
+layers that will give me the assurance that my archives will be viable and accessible decades from now?
+Of course my own archival needs are only a microcosm of the exponentially expanding knowledge base that
+human civilization is accumulating. It is this shared species-wide knowledge base that distinguishes us from other
+animals. Other animals communicate, but they don't accumulate an evolving and growing base of knowledge to pass
+down to the next generation. Since we are writing our precious heritage in what medical informatics expert Bryan
+Bergeron calls "disappearing ink," our civilization's legacy would appear to be at great risk.44 The danger appears to be
+growing exponentially along with the growth of our knowledge bases. The problem is further exacerbated by the
+accelerating speed with which we adopt new standards in the many layers of hardware and software we employ to
+store information.
+There is another valuable repository of information stored in our brains. Our memories and skills, although they
+may appear to be fleeting, do represent information, coded in vast patterns of neurotransmitter concentrations,
+interneuronal connections, and other relevant neural details. This information is the most precious of all, which is one
+reason death is so tragic. As we have discussed, we will ultimately be able to access, permanently archive, as well as
+understand the thousands of trillions of bytes of information we have tucked away in each of our brains.
+Copying our minds to other mediums raises a number of philosophical issues, which I will discuss in the next
+chapter—for example, "Is that really me or rather someone else who just happens to have mastered all my thoughts
+and knowledge?" Regardless of how we resolve these issues, the idea of capturing the information and information
+processes in our brains seems to imply that we (or at least entities that act very much like we do) could "live forever."
+But is that really the implication?
+For eons the longevity of our mental software has been inexorably linked to the survival of our biological
+hardware. Being able to capture and reinstantiate all the details of our information processes would indeed separate
+these two aspects of our mortality. But as we have seen, software itself does not necessarily survive forever, and there
+are formidable obstacles to its enduring very long at all.
+So whether information represents one man's sentimental archive, the accumulating knowledge base of the
+human-machine civilization, or the mind files stored in our brains, what can we conclude about the ultimate longevity
+of software? The answer is simply this: Information lasts only so long as someone cares about it. The conclusion that
+I've come to with regard to my DAISI project, after several decades of careful consideration, is that there is no set of
+hardware and software standards existing today, nor any likely to come along, that will provide any reasonable level of
+confidence that the stored information will still be accessible (without unreasonable levels of effort) decades from
+now.45 The only way that my archive (or any other information base) can remain viable is if it is continually upgraded
+and ported to the latest hardware and software standards. If an archive remains ignored, it will ultimately become as
+inaccessible as my old eight-inch PDP-8 floppy disks.
+Information will continue to require constant maintenance and support to remain "alive." Whether data or wisdom,
+information will survive only if we want it to. By extension, we can only live for as long as we care about ourselves.
+Already our knowledge to control disease and aging is advanced to the point that your attitude toward your own
+longevity is now the most important influence on your long-range health.
+Our civilization's trove of knowledge does not simply survive by itself. We must continually rediscover,
+reinterpret, and reformat the legacy of culture and technology that our forebears have bestowed on us. All of this
+information will be fleeting if no one cares about it. Translating our currently hardwired thoughts into software will
+not necessarily provide us with immortality. It will simply place the means to determine how long we want our lives
+and thoughts to last in our own figurative hands.
+MOLLY 2004: So what you're saying is that I'm just a file?
+MOLLY 2104: Well, not a static file, but a dynamic file. But what do you mean "just"? What could be more
+important?
+MOLLY 2004: Well, I throw files away all the time, even dynamic ones.
+MOLLY 2104: Not all files are created equal.
+MOLLY 2004: I suppose that's true. I was devastated when I lost my only copy of my senior thesis. I lost six months of
+work and had to start over.
+MOLLY 2104: Ah, yes, that was awful. I remember it well, even though it was over a century ago. It was devastating
+because it was a small part of myself. I had invested my thoughts and creativity in that file of information. So
+think how precious all of your—my—accumulated thoughts, experience, skills, and history are.
+. . . on Warfare: The Remote, Robotic, Robust, Size-Reduced, Virtual-Reality Paradigm
+As weapons have become more intelligent, there has been a dramatic trend toward more precise missions with fewer
+casualties. It may not seem that way when viewed alongside the tendency toward more detailed, realistic television-
+news coverage. The great battles of World Wars I and II and the Korean War, in which tens of thousands of lives were
+lost over the course of a few days, were visually recorded only by occasional grainy newsreels. Today, we have a
+front-row seat for almost every engagement. Each war has its complexities, but the overall movement toward precision
+intelligent warfare is clear by examining the number of casualties. This trend is similar to what we are beginning to see
+in medicine, where smart weapons against disease are able to perform specific missions with far fewer side effects.
+The trend is similar for collateral casualties, although it may not seem that way from contemporary media coverage
+(recall that about fifty million civilians died in World War II).
+I am one of five members of the Army Science Advisory Group (ASAG), which advises the U.S. Army on
+priorities for its science research. Although our briefings, deliberations, and recommendations are confidential, I can
+share some overall technological directions that are being pursued by the army and all of the U.S. armed forces.
+Dr. John A. Parmentola, director for research and laboratory management for the U.S. Army and liaison to the
+ASAG, describes the Department of Defense's "transformation" process as a move toward an armed force that is
+"highly responsive, network-centric, capable of swift decision, superior in all echelons, and [able to provide]
+overwhelming massed effects across any battle space."46 He describes the Future Combat System (FCS), now under
+development and scheduled to roll out during the second decade of this century, as "smaller, lighter, faster, more
+lethal, and smarter."
+Dramatic changes are planned for future war-fighting deployments and technology. Although details are likely to
+change, the army envisions deploying Brigade Combat Teams (BCTs) of about 2,500 soldiers, unmanned robotic
+systems, and FCS equipment. A single BCT would represent about 3,300 "platforms," each with its own intelligent
+computational capabilities. The BCT would have a common operating picture (COP) of the battlefield, which would
+be appropriately translated for it, with each soldier receiving information through a variety of means, including retinal
+(and other forms of "heads up") displays and, in the future, direct neural connection.
+The army's goal is to be capable of deploying a BCT in 96 hours and a full division in 120 hours. The load for
+each soldier, which is now about one hundred pounds of equipment, will initially be reduced through new materials
+and devices to forty pounds, while dramatically improving effectiveness. Some of the equipment would be offloaded
+to "robotic mules."
+A new uniform material has been developed using a novel form of Kevlar with silica nanoparticles suspended in
+polyethylene glycol. The material is flexible in normal use, but when stressed it instantly forms a nearly impenetrable
+mass that is stab resistant. The army's Institute for Soldier Nanotechnologies at MIT is developing a nanotechnology-
+based material called "exomuscle" to enable combatants to greatly increase their physical strength when manipulating
+heavy equipment.47
+The Abrams tank has a remarkable survival record, with only three combat casualties in its twenty years of
+combat use. This is the result of both advanced armor materials and of intelligent systems designed to defeat incoming
+weapons, such as missiles. However, the tank weighs more than seventy tons, a figure that will need to be significantly
+reduced to meet FCS goals for smaller systems.
+New lightweight yet ultrastrong nanomaterials (such as plastics combined with nanotubes, which are fifty times
+stronger than steel), as well as increased computer intelligence to counteract missile attacks, are expected to
+dramatically lower the weight of ground combat systems.
+The trend toward unmanned aerial vehicles (DAVs), which started with the armed Predator in the recent
+Afghanistan and Iraq campaigns, will accelerate. Army research includes the development of micro-DAYs the size of
+birds that will be fast, accurate, and capable of performing both reconnaissance and combat missions. Even smaller
+DAVs the size of bumblebees are envisioned. The navigational ability of an actual bumblebee, which is based on a
+complex interaction between its left and right vision systems, has recently been reverse engineered and will be applied
+to these tiny flying machines.
+At the center of the FCS is a self-organizing, highly distributed communications network capable of gathering
+information from each soldier and each piece of equipment and in turn providing the appropriate information displays
+and files back to each human and machine participant. There will be no centralized communications hubs that could be
+vulnerable to hostile attack. Information will rapidly route itself around damaged portions of the network. An obvious
+top priority is to develop technology capable of maintaining integrity of communication and preventing either
+eavesdropping or manipulation of information by hostile forces. The same information-security technology will be
+applied to infiltrate, disrupt, confuse, or destroy enemy communications through both electronic means and
+cyberwarfare using software pathogens.
+The FCS is not a one-shot program; it represents a pervasive focus of military systems toward remotely guided,
+autonomous, miniaturized, and robotic systems, combined with robust, self-organizing, distributed, and secure
+communications.
+The U.S. Joint Forces Command's Project Alpha (responsible for accelerating transformative ideas throughout the
+armed services) envisions a 2025 fighting force that "is largely robotic," incorporating tactical autonomous combatants
+(TACs) that "have some level of autonomy-adjustable autonomy or supervised autonomy or full autonomy within . . .
+mission bounds."48 The TACs will be available in a wide range of sizes, ranging from nanobots and microbots up to
+large UAVs and other vehicles, as well as automated systems that can walk through complex terrains. One innovative
+design being developed by NASA with military applications envisioned is in the form of a snake.49
+One of the programs contributing to the 2020s concept of self-organizing swarms of small robots is the
+Autonomous Intelligent Network and Systems (AINS) program of the Office of Naval Research, which envisions a
+drone army of unmanned, autonomous robots in the water, on the ground, and in the air. The swarms will have human
+commanders with decentralized command and control and what project head Allen Moshfegh calls an "impregnable
+Internet in the sky."50
+Extensive research is going into designing swarm intelligence.51 Swarm intelligence describes the way that
+complex behaviors can arise from large numbers of individual agents, each following relatively simple rules.52 Swarms
+of insects are often able to devise intelligent solutions to complex problems, such as designing the architecture of a
+colony, despite the fact that no single member of the swarm possesses the requisite skills.
+DARPA announced in 2003 that a battalion of 120 military robots (built by I-Robot, a company cofounded by
+robotics pioneer Rodney Brooks) was to be fitted with swarm-intelligence software to enable it to mimic the organized
+behavior of insects.53 As robotic systems become physically smaller and larger in number, the principles of self-
+organizing swarm intelligence will play an increasingly important role.
+There is also recognition in the military that development times need to be reduced. Historically, the typical time
+period for military projects to go from research to deployment has been longer than a decade. But with the technology
+paradigm-shift rate coming down by half every decade, these development times need to keep pace, as many weapons
+systems are already obsolete by the time they reach the field. One way to accomplish this is to develop and test new
+weapons using simulations, which enable weapons systems to be designed, implemented, and tested far more quickly
+than the traditional means of building prototypes and testing them (often by blowing them up) in actual use.
+Another key trend is to move personnel away from combat to improve soldiers' rates of survival. This can be done
+by allowing humans to drive and pilot systems remotely. Taking the pilot out of a vehicle allows it to take part in
+riskier missions and to be designed to be far more maneuverable. It also allows the devices to become very small by
+dispensing with the extensive requirements for supporting human life. The generals are moving even farther away.
+Tommy Franks conducted the war in Afghanistan from his bunker in Qatar.
+Smart Dust. DARPA is developing devices even tinier than birds and bumblebees called "smart dust"—complex
+sensor systems not much bigger than a pinhead. Once fully developed, swarms of millions of these devices could be
+dropped into enemy territory to provide highly detailed surveillance and ultimately support offensive warfare missions
+(for example, releasing nanoweapons). Power for smart-dust systems will be provided by nanoengineered fuel cells, as
+well as by conversion of mechanical energy from their own movement, wind, and thermal currents.
+Want to find a key enemy? Need to locate hidden weapons? Massive numbers of essentially invisible spies could
+monitor every square inch of enemy territory, identify every person (through thermal and electromagnetic imaging,
+eventually DNA tests, and other means) and every weapon and even carry out missions to destroy enemy targets.
+Nanoweapons. The next step beyond smart dust will be nanotechnology-based weapons, which will make obsolete
+weapons of larger size. The only way for an enemy to counteract such a massively distributed force will be with its
+own nanotechnology. In addition, enhancing nanodevices with the ability to self-replicate will extend their capabilities
+but introduces grave dangers, a subject I address in chapter 8.
+Nanotechnology is already being applied to a wide range of military functions. These include nanotech coatings
+for improved armor; laboratories on a chip for rapid chemical and biological-agent detection and identification;
+nanoscale catalysts for decontaminating areas; smart materials that can restructure themselves for different situations;
+biocidal nanoparticles incorporated into uniforms to reduce infection from injuries; nanotubes combined with plastics
+to create extremely strong materials; and self-healing materials. For example, the University of Illinois has developed
+self-healing plastics that incorporate microspheres of liquid monomers and a catalyst into a plastic matrix; when a
+crack appears, the microspheres break, automatically sealing the crack.54
+Smart Weapons. We've already moved from dumb missiles launched with hopes they will find their targets to
+intelligent cruise missiles that use pattern recognition to make thousands of tactical decisions on their own. Bullets,
+however, have remained essentially small dumb missiles, and providing them with a measure of intelligence is another
+military objective.
+As military weapons become smaller in size and larger in number, it won't be desirable or feasible to maintain
+human control over each device. So increasing the level of autonomous control is another important goal. Once
+mach
